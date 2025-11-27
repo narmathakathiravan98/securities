@@ -356,9 +356,9 @@ public class Securities {
           callableStatement.setString(10, state);
           callableStatement.setInt(11, zipcode);
 
-          boolean hasResultSet = callableStatement.execute();
+          int rowsAffected = callableStatement.executeUpdate();
 
-          if (hasResultSet) {
+          if (rowsAffected > 0) {
               System.out.println("Nominee added successful!");
           } else {
               System.out.println("Nominee not added. Try again.");
@@ -373,7 +373,26 @@ public class Securities {
   }
 
   private void deleteNominee(Integer investorId) {
+      String sql = "{CALL delete_nominee(?)}";
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
+          callableStatement.setInt(1, investorId);
+
+          int rowsAffected = callableStatement.executeUpdate();
+
+          if (rowsAffected > 0) {
+              System.out.println("The nominee has been deleted successfully!");
+          } else {
+              System.out.println("The nominee could not be deleted. Try again.");
+          }
+
+          callableStatement.close();
+
+      } catch(Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the nominee details. Try again.");
+      }
   }
 
   private void viewPortfolios() {
