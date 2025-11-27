@@ -153,16 +153,19 @@ public class Securities {
   }
 
   private void userLoginAndActions() {
-    System.out.println("Please enter username and password.");
+    System.out.println("Please enter the credentials :");
     Scanner scanner =  new Scanner(System.in);
-    String username = scanner.nextLine();
-    String password = scanner.nextLine();
-    int investorId = getInvestor(username, password);
+    System.out.print("Username : ");
+    String username = scanner.next();
+      System.out.print("Password : ");
+    String password = scanner.next();
 
-    if(investorId == 0) {
+    Investor investor = getInvestor(username, password);
+
+    if(investor == null || investor.getId() == null) {
       System.out.println("Invalid credentials. Please create an account.");
     } else {
-      //System.out.println("Welcome " + investor.getFirstName() + " " + investor.getLastName());
+      System.out.println("Welcome " + investor.getFirstName() + " " + investor.getLastName());
 
       boolean isNotLoggedIn = true;
       while(isNotLoggedIn) {
@@ -218,15 +221,38 @@ public class Securities {
     }
   }
 
-  private int getInvestor(String username, String password) {
-      String sql = "";
+  private Investor getInvestor(String username, String password) {
+      Investor investor = null;
+      String sql = "{CALL login(?, ?)}";
       try {
           CallableStatement callableStatement = this.connection.prepareCall(sql);
+
+          callableStatement.setString(1, username);
+          callableStatement.setString(2, password);
+
+          boolean hasResultSet = callableStatement.execute();
+
+          if (hasResultSet) {
+              ResultSet resultSet = callableStatement.getResultSet();
+              while (resultSet.next()) {
+                  investor = new Investor(resultSet.getInt("investor_id"),
+                          resultSet.getString("first_name"), resultSet.getString("last_name"),
+                          resultSet.getString("username"), resultSet.getString("password"),
+                          resultSet.getString("category_type"), resultSet.getInt("ssn"),
+                          resultSet.getDate("date_of_birth"), resultSet.getInt("phone_number"),
+                          resultSet.getInt("address_street_number"), resultSet.getString("address_street_name"),
+                          resultSet.getString("address_city"), resultSet.getString("address_state"),
+                          resultSet.getInt("address_zipcode"));
+              }
+              resultSet.close();
+          }
+          callableStatement.close();
+
       } catch(Exception e) {
           System.out.println(e.getMessage());
           System.out.println("ERROR: Could not fetch the investor details. Try again.");
       }
-      return 0;
+      return investor;
   }
 
   private void viewNominee() {
