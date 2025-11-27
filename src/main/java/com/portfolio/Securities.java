@@ -1,6 +1,12 @@
 package com.portfolio;
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -21,10 +27,13 @@ public class Securities {
   /** The name of the database. */
   private final String databaseName = "nexa_wealth_management";
 
+    /** The username of the database connection. */
   private final String databaseUsername = "root";
 
+    /** The password of the database connection. */
   private final String databasePassword = "Narmatha@1998";
 
+  /** The database connection. */
   private Connection connection = null;
 
   public Securities() {
@@ -60,7 +69,7 @@ public class Securities {
     Scanner scanner =  new Scanner(System.in);
     boolean isNotExit = true;
     while(isNotExit) {
-      System.out.println("Menu options :");
+      System.out.println("\n\n\nMenu options :");
       System.out.println("1 -> Create account");
       System.out.println("2 -> Log in");
       System.out.println("3 -> Exit the application");
@@ -82,6 +91,9 @@ public class Securities {
     System.out.println("Thank you for using the application!");
   }
 
+    /**
+     * Creates the investor account.
+     */
   private void userCreateAccount() {
       Scanner scanner = new Scanner(System.in);
 
@@ -152,6 +164,9 @@ public class Securities {
     }
   }
 
+    /**
+     * Handles login of the investors and the actions they can perform.
+     */
   private void userLoginAndActions() {
     System.out.println("Please enter the credentials :");
     Scanner scanner =  new Scanner(System.in);
@@ -169,7 +184,7 @@ public class Securities {
 
       boolean isNotLoggedIn = true;
       while(isNotLoggedIn) {
-        System.out.println("Dashboard options:");
+        System.out.println("\n\nDashboard options:");
         System.out.println("1 -> View Nominee");
         System.out.println("2 -> Add/Edit Nominee");
         System.out.println("3 -> Delete Nominee");
@@ -184,13 +199,13 @@ public class Securities {
         int choice = scanner.nextInt();
         switch(choice) {
           case 1 :
-            viewNominee();
+            viewNominee(investor.getId());
             break;
           case 2:
-            addOrEditNominee();
+            addOrEditNominee(investor.getId());
             break;
           case 3:
-            deleteNominee();
+            deleteNominee(investor.getId());
             break;
           case 4:
             viewPortfolios();
@@ -221,6 +236,13 @@ public class Securities {
     }
   }
 
+    /**
+     * Gets the investor details from login.
+     *
+     * @param username the username
+     * @param password the password
+     * @return the investor details.
+     */
   private Investor getInvestor(String username, String password) {
       Investor investor = null;
       String sql = "{CALL login(?, ?)}";
@@ -255,15 +277,102 @@ public class Securities {
       return investor;
   }
 
-  private void viewNominee() {
+    /**
+     * Fetches the nominee details for an investor id.
+     */
+  private void viewNominee(Integer investorId) {
+      String sql = "{CALL get_nominee(?)}";
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
+          callableStatement.setInt(1, investorId);
+
+          boolean hasResultSet = callableStatement.execute();
+
+          if (hasResultSet) {
+              ResultSet resultSet = callableStatement.getResultSet();
+              if(resultSet.next()) {
+                  System.out.println("Nominee First Name : " + resultSet.getString("first_name"));
+                  System.out.println("Nominee Last Name : " + resultSet.getString("last_name"));
+                  System.out.println("Nominee SSN : " + resultSet.getInt("ssn"));
+              } else {
+                  System.out.println("The investor has no nominee.");
+              }
+              resultSet.close();
+          }
+          callableStatement.close();
+
+      } catch(Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the nominee details. Try again.");
+      }
   }
 
-  private void addOrEditNominee() {
+    /**
+     * Adds or updates nominee for an investor id.
+     *
+     * @param investorId the investor id.
+     */
+  private void addOrEditNominee(Integer investorId) {
 
+      Scanner scanner = new Scanner(System.in);
+      System.out.println("Enter the nominee details : ");
+      System.out.print("First Name : ");
+      String firstName = scanner.next();
+      System.out.print("Last Name : ");
+      String lastName = scanner.next();
+      System.out.print("SSN : ");
+      int ssn = scanner.nextInt();
+      System.out.print("Date of Birth (YYYY-MM-DD) : ");
+      String dateOfBirth = scanner.next();
+      System.out.print("Phone number : ");
+      String phoneNumber = scanner.next();
+      System.out.print("Address Street Number : ");
+      int streetNumber = scanner.nextInt();
+      System.out.print("Address Street Name : ");
+      String streetName = scanner.next();
+      System.out.print("Address City : ");
+      String city = scanner.next();
+      System.out.print("Address State : ");
+      String state = scanner.next();
+      System.out.print("Address ZipCode : ");
+      int zipcode = scanner.nextInt();
+
+      try {
+
+          String sql = "{CALL modify_nominee(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
+
+          callableStatement.setInt(1, investorId);
+          callableStatement.setInt(2, ssn);
+          callableStatement.setString(3, firstName);
+          callableStatement.setString(4, lastName);
+          callableStatement.setDate(5, Date.valueOf(dateOfBirth));
+          callableStatement.setString(6, phoneNumber);
+          callableStatement.setInt(7, streetNumber);
+          callableStatement.setString(8, streetName);
+          callableStatement.setString(9, city);
+          callableStatement.setString(10, state);
+          callableStatement.setInt(11, zipcode);
+
+          boolean hasResultSet = callableStatement.execute();
+
+          if (hasResultSet) {
+              System.out.println("Nominee added successful!");
+          } else {
+              System.out.println("Nominee not added. Try again.");
+          }
+
+          callableStatement.close();
+
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not add nominee into the database. Try again.");
+      }
   }
 
-  private void deleteNominee() {
+  private void deleteNominee(Integer investorId) {
 
   }
 
