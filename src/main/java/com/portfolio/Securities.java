@@ -36,6 +36,7 @@ public class Securities {
   /** The database connection. */
   private Connection connection = null;
 
+  /** Instantiates the database connection for the application. */
   public Securities() {
     try {
       Properties connectionProps = new Properties();
@@ -356,13 +357,9 @@ public class Securities {
           callableStatement.setString(10, state);
           callableStatement.setInt(11, zipcode);
 
-          int rowsAffected = callableStatement.executeUpdate();
+          callableStatement.execute();
 
-          if (rowsAffected > 0) {
-              System.out.println("Nominee added successful!");
-          } else {
-              System.out.println("Nominee not added. Try again.");
-          }
+          System.out.println("Nominee added successful!");
 
           callableStatement.close();
 
@@ -379,13 +376,9 @@ public class Securities {
 
           callableStatement.setInt(1, investorId);
 
-          int rowsAffected = callableStatement.executeUpdate();
+          callableStatement.execute();
 
-          if (rowsAffected > 0) {
-              System.out.println("The nominee has been deleted successfully!");
-          } else {
-              System.out.println("The nominee could not be deleted. Try again.");
-          }
+          System.out.println("The nominee has been deleted successfully!");
 
           callableStatement.close();
 
