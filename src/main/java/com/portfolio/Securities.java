@@ -216,10 +216,10 @@ public class Securities {
             deleteNominee(investor.getId());
             break;
           case 4:
-            viewPortfolios();
+            viewPortfolios(investor.getId());
             break;
           case 5:
-            createPortfolio();
+            createPortfolio(investor.getId());
             break;
           case 6:
             requestPortfolioManager();
@@ -395,12 +395,41 @@ public class Securities {
       }
   }
 
-  private void viewPortfolios() {
+  private void viewPortfolios(Integer investorId) {
 
   }
 
-  private void createPortfolio() {
+  private void createPortfolio(Integer investorId) {
+      Scanner scanner = new Scanner(System.in);
+      System.out.println("Enter the portfolio details : ");
+      System.out.print("Portfolio Name : ");
+      String portfolioName = scanner.next();
+      System.out.print("Status (Aggressive/Conservative/Balanced/Income-oriented/Underperforming/Archived) : ");
+      String status = scanner.next();
+      System.out.print("Goal (Long-Term/Short-Term/Tax-Efficient/Retirement/Emergency Fund/Other) : ");
+      String goal = scanner.next();
+      System.out.print("Currency : ");
+      String currency = scanner.next();
+      String sql = "{CALL create_portfolio(?, ?, ?, ?, ?)}";
 
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
+
+          callableStatement.setInt(1, investorId);
+          callableStatement.setString(2, portfolioName);
+          callableStatement.setString(3, status);
+          callableStatement.setString(4, goal);
+          callableStatement.setString(5, currency);
+
+          callableStatement.execute();
+
+          System.out.println("Portfolio created successful!");
+
+          callableStatement.close();
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not add the portfolio. Try again.");
+      }
   }
 
   private void requestPortfolioManager() {
@@ -512,7 +541,7 @@ public class Securities {
 
       } catch(Exception e) {
           System.out.println(e.getMessage());
-          System.out.println("ERROR: Could not fetch the nominee details. Try again.");
+          System.out.println("ERROR: Could not fetch the securities data. Try again.");
       }
   }
 
