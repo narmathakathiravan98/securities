@@ -197,7 +197,7 @@ public class Securities {
         System.out.println("2 -> Add/Edit Nominee");
         System.out.println("3 -> Delete Nominee");
         System.out.println("4 -> View portfolios");
-        System.out.println("5 -> Create/Modify portfolio");
+        System.out.println("5 -> Create portfolio");
         System.out.println("6 -> Request for a portfolio manager");
         System.out.println("7 -> Search for securities");
         System.out.println("8 -> Show last 10 transactions");
@@ -269,7 +269,7 @@ public class Securities {
                           resultSet.getString("first_name"), resultSet.getString("last_name"),
                           resultSet.getString("username"), resultSet.getString("password"),
                           resultSet.getString("category_type"), resultSet.getInt("ssn"),
-                          resultSet.getDate("date_of_birth"), resultSet.getInt("phone_number"),
+                          resultSet.getDate("date_of_birth"), resultSet.getString("phone_number"),
                           resultSet.getInt("address_street_number"), resultSet.getString("address_street_name"),
                           resultSet.getString("address_city"), resultSet.getString("address_state"),
                           resultSet.getInt("address_zipcode"));

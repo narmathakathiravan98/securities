@@ -11,7 +11,7 @@ public class Investor {
     private String category;
     private Integer ssn;
     private Date dateOfBirth;
-    private Integer phoneNumber;
+    private String phoneNumber;
     private Integer streetNumber;
     private String streetName;
     private String city;
@@ -19,7 +19,7 @@ public class Investor {
     private Integer zipCode;
 
     public Investor(Integer id, String firstName, String lastName, String username, String password, String category, Integer ssn,
-                    Date dateOfBirth, Integer phoneNumber, Integer streetNumber,
+                    Date dateOfBirth, String phoneNumber, Integer streetNumber,
                     String streetName, String city, String state, Integer zipCode) {
         this.id = id;
         this.firstName = firstName;
@@ -101,11 +101,11 @@ public class Investor {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Integer getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(Integer phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
