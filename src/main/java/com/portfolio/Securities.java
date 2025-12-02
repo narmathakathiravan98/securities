@@ -89,7 +89,14 @@ public class Securities {
         default: System.out.println("Invalid option.");
       }
     }
-    System.out.println("Thank you for using the application!");
+
+    try {
+        this.connection.close();
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+        System.out.println("ERROR: Could not close the database connection.");
+    }
+    System.out.println("\nThank you for using the application!");
   }
 
     /**
@@ -181,7 +188,7 @@ public class Securities {
     if(investor == null || investor.getId() == null) {
       System.out.println("Invalid credentials. Please create an account.");
     } else {
-      System.out.println("Welcome " + investor.getFirstName() + " " + investor.getLastName());
+      System.out.println("\nWelcome " + investor.getFirstName() + " " + investor.getLastName());
 
       boolean isNotLoggedIn = true;
       while(isNotLoggedIn) {
@@ -401,7 +408,112 @@ public class Securities {
   }
 
   private void searchSecurities() {
+      Scanner scanner = new Scanner(System.in);
+      System.out.print("What type of security do you want to search for? (stock/bond/mutual fund/etf) : ");
+      String type = scanner.next();
+      System.out.print("What risk level securities do you want to look for? (High/Medium/Low) : ");
+      String riskLevel = scanner.next();
+      String sql = "{CALL search_securities(?, ?)}";
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
+          callableStatement.setString(1, riskLevel);
+          callableStatement.setString(2, type);
+
+          boolean hasResultSet = callableStatement.execute();
+
+          if (hasResultSet) {
+              ResultSet resultSet = callableStatement.getResultSet();
+              switch (type) {
+                  case "stock":
+                      System.out.println("Stocks of risk level " + riskLevel + ":");
+                      while (resultSet.next()) {
+                          System.out.println(
+                                  "ID: " + resultSet.getInt("security_id") +
+                                          ", Name: " + resultSet.getString("security_name") +
+                                          ", Company: " + resultSet.getString("issuing_company") +
+                                          ", Price: " + resultSet.getDouble("market_price") +
+                                          ", Sector: " + resultSet.getString("sector") +
+                                          ", Currency: " + resultSet.getString("currency") +
+                                          ", Exchange: " + resultSet.getString("exchange_name") +
+                                          ", Dividend Yield: " + resultSet.getDouble("divident_yield") +
+                                          ", Dividend Frequency: " + resultSet.getInt("divident_frequency") +
+                                          ", Shares Outstanding: " + resultSet.getDouble("shares_outstanding")
+                          );
+                      }
+                      break;
+
+                  case "bond":
+                      System.out.println("Bonds of risk level " + riskLevel + ":");
+                      while (resultSet.next()) {
+                          System.out.println(
+                                  "ID: " + resultSet.getInt("security_id") +
+                                          ", Name: " + resultSet.getString("security_name") +
+                                          ", Company: " + resultSet.getString("issuing_company") +
+                                          ", Price: " + resultSet.getDouble("market_price") +
+                                          ", Sector: " + resultSet.getString("sector") +
+                                          ", Currency: " + resultSet.getString("currency") +
+                                          ", Face Value: " + resultSet.getDouble("face_value") +
+                                          ", Coupon Rate: " + resultSet.getDouble("coupon_rate") +
+                                          ", Coupon Frequency: " + resultSet.getInt("coupon_frequency") +
+                                          ", Maturity Date: " + resultSet.getDate("maturity_date") +
+                                          ", Credit Rating: " + resultSet.getString("credit_rating")
+                          );
+                      }
+                      break;
+
+                  case "mutual fund":
+                      System.out.println("Mutual Funds of risk level " + riskLevel + ":");
+                      while (resultSet.next()) {
+                          System.out.println(
+                                  "ID: " + resultSet.getInt("security_id") +
+                                          ", Name: " + resultSet.getString("security_name") +
+                                          ", Company: " + resultSet.getString("issuing_company") +
+                                          ", Price: " + resultSet.getDouble("market_price") +
+                                          ", Sector: " + resultSet.getString("sector") +
+                                          ", Currency: " + resultSet.getString("currency") +
+                                          ", Benchmark: " + resultSet.getString("benchmark_name") +
+                                          ", NAV: " + resultSet.getDouble("nav") +
+                                          ", Expense Ratio: " + resultSet.getDouble("expense_ratio") +
+                                          ", Distribution Yield: " + resultSet.getDouble("distribution_yield") +
+                                          ", Distribution Frequency: " + resultSet.getInt("distribution_frequency") +
+                                          ", Fund Type: " + resultSet.getString("fund_type")
+                          );
+                      }
+                      break;
+
+                  case "etf":
+                      System.out.println("ETFs of risk level " + riskLevel + ":");
+                      while (resultSet.next()) {
+                          System.out.println(
+                                  "ID: " + resultSet.getInt("security_id") +
+                                          ", Name: " + resultSet.getString("security_name") +
+                                          ", Company: " + resultSet.getString("issuing_company") +
+                                          ", Price: " + resultSet.getDouble("market_price") +
+                                          ", Sector: " + resultSet.getString("sector") +
+                                          ", Currency: " + resultSet.getString("currency") +
+                                          ", Benchmark: " + resultSet.getString("benchmark_name") +
+                                          ", NAV: " + resultSet.getDouble("nav") +
+                                          ", Expense Ratio: " + resultSet.getDouble("expense_ratio") +
+                                          ", Distribution Yield: " + resultSet.getDouble("distribution_yield") +
+                                          ", Distribution Frequency: " + resultSet.getInt("distribution_frequency") +
+                                          ", Liquidity: " + resultSet.getString("liquidity")
+                          );
+                      }
+                      break;
+
+                  default:
+                      System.out.println("Unknown security type: " + type);
+                      break;
+              }
+              resultSet.close();
+          }
+          callableStatement.close();
+
+      } catch(Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the nominee details. Try again.");
+      }
   }
 
   private void showLatestTransactions() {
