@@ -396,10 +396,37 @@ public class Securities {
   }
 
   private void viewPortfolios(Integer investorId) {
+      String sql = "{CALL view_portfolios(?)}";
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
+          callableStatement.setInt(1, investorId);
+
+          boolean hasResultSet = callableStatement.execute();
+
+          if (hasResultSet) {
+              ResultSet resultSet = callableStatement.getResultSet();
+              while(resultSet.next()) {
+                  System.out.println(
+                          "ID: " + resultSet.getInt("portfolio_id") +
+                                  ", Portfolio Name: " + resultSet.getString("portfolio_name") +
+                                  ", Market Price in USD: " + resultSet.getDouble("portfolio_market_price")
+                  );
+              }
+
+              resultSet.close();
+          }
+          callableStatement.close();
+
+      } catch(Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the portfolio details. Try again.");
+      }
   }
 
   private void createPortfolio(Integer investorId) {
+      getCurrencies();
+
       Scanner scanner = new Scanner(System.in);
       System.out.println("Enter the portfolio details : ");
       System.out.print("Portfolio Name : ");
@@ -433,6 +460,32 @@ public class Securities {
   }
 
   private void requestPortfolioManager() {
+      getPortfolioManagers();
+
+      Scanner scanner = new Scanner(System.in);
+      System.out.println("\nEnter the portfolio and manager details :");
+      System.out.print("Portfolio manager employee id : ");
+      int managerId = scanner.nextInt();
+      System.out.print("Portfolio id : ");
+      int portfolioId = scanner.nextInt();
+
+      String sql = "{CALL choose_portfolio_manager(?, ?)}";
+      try {
+
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
+          callableStatement.setInt(1, portfolioId);
+          callableStatement.setInt(2, managerId);
+
+          callableStatement.execute();
+
+          System.out.println("Portfolio Manager added successful!");
+
+          callableStatement.close();
+
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not add the portfolio manager to the portfolio. Try again.");
+      }
 
   }
 
@@ -551,5 +604,57 @@ public class Securities {
 
   private void makeTransaction() {
 
+  }
+
+  private void getCurrencies() {
+      try {
+
+          String sql = "SELECT * FROM currency_rates";
+
+          PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+
+          preparedStatement.execute();
+          ResultSet resultSet = preparedStatement.getResultSet();
+
+          System.out.println("List of available Currencies : ");
+          while(resultSet.next()) {
+              System.out.println("Currency: " + resultSet.getString("currency") +
+                      ", Conversion rate to USD: " + resultSet.getDouble("rate_to_usd"));
+          }
+
+          preparedStatement.close();
+
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the currencies. Try again.");
+      }
+  }
+
+  private void getPortfolioManagers() {
+      try {
+
+          String sql = "SELECT employee_id, first_name, last_name, phone_number, email_id FROM " +
+                  "portfolio_manager JOIN email ON portfolio_manager.employee_id = email.employee_id";
+
+          PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+
+          preparedStatement.execute();
+          ResultSet resultSet = preparedStatement.getResultSet();
+          System.out.println("List of available Portfolio Managers : ");
+          while(resultSet.next()) {
+              System.out.println("ID: " + resultSet.getInt("employee_id") +
+                      ", First Name: " + resultSet.getString("first_name") +
+                      ", Last Name: " + resultSet.getString("last_name") +
+                      ", Phone Number: " + resultSet.getString("phone_number") +
+                      ", Email Id: " + resultSet.getString("email_id")
+              );
+          }
+
+          preparedStatement.close();
+
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the currencies. Try again.");
+      }
   }
 }
