@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -14,7 +15,7 @@ import java.util.Scanner;
  * This class contains the code to connect to Nexa Wealth Management Database
  * and perform various actions.
  *
- * @author Narmatha
+ * @author Narmatha Kathiravan
  */
 public class Securities {
 
@@ -222,7 +223,7 @@ public class Securities {
             createPortfolio(investor.getId());
             break;
           case 6:
-            requestPortfolioManager();
+            requestPortfolioManager(investor.getId());
             break;
           case 7:
             searchSecurities();
@@ -231,7 +232,7 @@ public class Securities {
             showLatestTransactions(investor.getId());
             break;
           case 9:
-            makeTransaction();
+            makeTransaction(investor.getId());
             break;
           case 10:
             isNotLoggedIn = false;
@@ -376,6 +377,11 @@ public class Securities {
       }
   }
 
+    /**
+     * Deletes nominee for an investor id.
+     *
+     * @param investorId the investor id.
+     */
   private void deleteNominee(Integer investorId) {
       String sql = "{CALL delete_nominee(?)}";
       try {
@@ -395,6 +401,11 @@ public class Securities {
       }
   }
 
+    /**
+     * Gets the portfolios of an investor id.
+     *
+     * @param investorId the investor id.
+     */
   private void viewPortfolios(Integer investorId) {
       String sql = "{CALL view_portfolios(?)}";
       try {
@@ -424,6 +435,11 @@ public class Securities {
       }
   }
 
+    /**
+     * Creates a portfolio for an investor id.
+     *
+     * @param investorId the investor id.
+     */
   private void createPortfolio(Integer investorId) {
       getCurrencies();
 
@@ -459,7 +475,12 @@ public class Securities {
       }
   }
 
-  private void requestPortfolioManager() {
+    /**
+     * Adds a portfolio manager to a portfolio of the investor.
+     *
+     * @param investorId the investor id.
+     */
+  private void requestPortfolioManager(Integer investorId) {
       getPortfolioManagers();
 
       Scanner scanner = new Scanner(System.in);
@@ -469,12 +490,13 @@ public class Securities {
       System.out.print("Portfolio id : ");
       int portfolioId = scanner.nextInt();
 
-      String sql = "{CALL choose_portfolio_manager(?, ?)}";
+      String sql = "{CALL choose_portfolio_manager(?, ?, ?)}";
       try {
 
           CallableStatement callableStatement = this.connection.prepareCall(sql);
           callableStatement.setInt(1, portfolioId);
           callableStatement.setInt(2, managerId);
+          callableStatement.setInt(3, investorId);
 
           callableStatement.execute();
 
@@ -489,6 +511,9 @@ public class Securities {
 
   }
 
+    /**
+     * Searches for securities based on type and risk level.
+     */
   private void searchSecurities() {
       Scanner scanner = new Scanner(System.in);
       System.out.print("What type of security do you want to search for? (stock/bond/mutual fund/etf) : ");
@@ -598,6 +623,11 @@ public class Securities {
       }
   }
 
+    /**
+     * Fetches the last 10 transactions of an investor.
+     *
+     * @param investorId the investor id.
+     */
   private void showLatestTransactions(Integer investorId) {
       String sql = "CALL show_last_ten_transactions(?)";
       try {
@@ -623,10 +653,50 @@ public class Securities {
       }
   }
 
-  private void makeTransaction() {
+    /**
+     * Saves the transaction of an investor.
+     *
+     * @param investorId the investor id.
+     */
+  private void makeTransaction(Integer investorId) {
+      Scanner scanner = new Scanner(System.in);
+      System.out.println("Enter the transaction details : ");
+      System.out.print("Transaction type (Buy/Sell) : ");
+      String type = scanner.next();
+      System.out.print("Security Id : ");
+      int securityId = scanner.nextInt();
+      System.out.print("Portfolio Id : ");
+      int portfolioId = scanner.nextInt();
+      System.out.print("Quantity : ");
+      int quantity = scanner.nextInt();
+      Date currentDate = Date.valueOf(LocalDate.now());
 
+      String sql = "{CALL make_transaction(?, ?, ?, ?, ?, ?)}";
+
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
+          callableStatement.setString(1, type);
+          callableStatement.setDate(2, currentDate);
+          callableStatement.setInt(3, securityId);
+          callableStatement.setInt(4, portfolioId);
+          callableStatement.setInt(5, quantity);
+          callableStatement.setInt(6, investorId);
+
+          callableStatement.execute();
+
+          System.out.println("Transaction successful!");
+
+          callableStatement.close();
+
+      } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not add the transaction. Try again.");
+      }
   }
 
+    /**
+     * Fetches all the currencies used in the company.
+     */
   private void getCurrencies() {
       try {
 
@@ -651,6 +721,9 @@ public class Securities {
       }
   }
 
+    /**
+     * Fetches all the portfolio managers in the company.
+     */
   private void getPortfolioManagers() {
       try {
 
