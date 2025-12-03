@@ -125,10 +125,10 @@ public class Securities {
     System.out.print("Address Street Number :");
     int streetNumber = scanner.nextInt();
     System.out.print("Address Street Name :");
-    String streetName = scanner.next();
+    String streetName = scanner.nextLine();
     System.out.print("Address City :");
-    String city = scanner.next();
-    System.out.print("Address State :");
+    String city = scanner.nextLine();
+    System.out.print("Address State (eg. MA/NY):");
     String state = scanner.next();
     System.out.print("Address ZipCode :");
     int zipcode = scanner.nextInt();
@@ -339,10 +339,10 @@ public class Securities {
       System.out.print("Address Street Number : ");
       int streetNumber = scanner.nextInt();
       System.out.print("Address Street Name : ");
-      String streetName = scanner.next();
+      String streetName = scanner.nextLine();
       System.out.print("Address City : ");
-      String city = scanner.next();
-      System.out.print("Address State : ");
+      String city = scanner.nextLine();
+      System.out.print("Address State (eg. MA/NY): ");
       String state = scanner.next();
       System.out.print("Address ZipCode : ");
       int zipcode = scanner.nextInt();
@@ -685,7 +685,7 @@ public class Securities {
       int quantity = scanner.nextInt();
       Date currentDate = Date.valueOf(LocalDate.now());
 
-      String sql = "{CALL make_transaction(?, ?, ?, ?, ?, ?)}";
+      String sql = "{CALL make_a_transaction(?, ?, ?, ?, ?, ?)}";
 
       try {
           CallableStatement callableStatement = this.connection.prepareCall(sql);
