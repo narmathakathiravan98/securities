@@ -228,7 +228,7 @@ public class Securities {
             searchSecurities();
             break;
           case 8:
-            showLatestTransactions();
+            showLatestTransactions(investor.getId());
             break;
           case 9:
             makeTransaction();
@@ -598,8 +598,29 @@ public class Securities {
       }
   }
 
-  private void showLatestTransactions() {
+  private void showLatestTransactions(Integer investorId) {
+      String sql = "CALL show_last_ten_transactions(?)";
+      try {
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
+          callableStatement.setInt(1, investorId);
+          callableStatement.execute();
+          
+          ResultSet resultSet = callableStatement.getResultSet();
 
+          while(resultSet.next()) {
+              System.out.println("ID: " + resultSet.getInt("transaction_id") +
+                      "Date: " + resultSet.getDate("transaction_date") +
+                      "Transaction Type: " + resultSet.getString("transaction_type") +
+                      "Quantity: " + resultSet.getInt("quantity") +
+                      "Security Name: " + resultSet.getString("security_name") +
+                      "Portfolio Name: " + resultSet.getString("portfolio_name")
+              );
+          }
+          
+      } catch(Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("ERROR: Could not fetch the transactions. Try again.");
+      }
   }
 
   private void makeTransaction() {
