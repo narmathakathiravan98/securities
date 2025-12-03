@@ -413,20 +413,26 @@ public class Securities {
 
           callableStatement.setInt(1, investorId);
 
-          boolean hasResultSet = callableStatement.execute();
+          callableStatement.execute();
 
-          if (hasResultSet) {
-              ResultSet resultSet = callableStatement.getResultSet();
-              while(resultSet.next()) {
-                  System.out.println(
-                          "ID: " + resultSet.getInt("portfolio_id") +
-                                  ", Portfolio Name: " + resultSet.getString("portfolio_name") +
-                                  ", Market Price in USD: " + resultSet.getDouble("portfolio_market_price")
-                  );
-              }
+          ResultSet resultSet = callableStatement.getResultSet();
+          boolean isResultPresent = false;
 
-              resultSet.close();
+          while(resultSet.next()) {
+              isResultPresent = true;
+              System.out.println(
+                      "ID: " + resultSet.getInt("portfolio_id") +
+                              ", Portfolio Name: " + resultSet.getString("portfolio_name") +
+                              ", Market Price in USD: " + resultSet.getDouble("portfolio_market_price")
+              );
           }
+
+          resultSet.close();
+
+          if (!isResultPresent) {
+              System.out.println("The investor has no portfolios.");
+          }
+
           callableStatement.close();
 
       } catch(Exception e) {
@@ -446,7 +452,7 @@ public class Securities {
       Scanner scanner = new Scanner(System.in);
       System.out.println("Enter the portfolio details : ");
       System.out.print("Portfolio Name : ");
-      String portfolioName = scanner.next();
+      String portfolioName = scanner.nextLine();
       System.out.print("Status (Aggressive/Conservative/Balanced/Income-oriented/Underperforming/Archived) : ");
       String status = scanner.next();
       System.out.print("Goal (Long-Term/Short-Term/Tax-Efficient/Retirement/Emergency Fund/Other) : ");
@@ -517,7 +523,7 @@ public class Securities {
   private void searchSecurities() {
       Scanner scanner = new Scanner(System.in);
       System.out.print("What type of security do you want to search for? (stock/bond/mutual fund/etf) : ");
-      String type = scanner.next();
+      String type = scanner.nextLine();
       System.out.print("What risk level securities do you want to look for? (High/Medium/Low) : ");
       String riskLevel = scanner.next();
       String sql = "{CALL search_securities(?, ?)}";
@@ -636,8 +642,10 @@ public class Securities {
           callableStatement.execute();
           
           ResultSet resultSet = callableStatement.getResultSet();
+          boolean isResultPresent = false;
 
           while(resultSet.next()) {
+              isResultPresent = true;
               System.out.println("ID: " + resultSet.getInt("transaction_id") +
                       "Date: " + resultSet.getDate("transaction_date") +
                       "Transaction Type: " + resultSet.getString("transaction_type") +
@@ -646,7 +654,13 @@ public class Securities {
                       "Portfolio Name: " + resultSet.getString("portfolio_name")
               );
           }
-          
+
+          resultSet.close();
+          if(!isResultPresent) {
+              System.out.println("No transaction present.");
+          }
+
+          callableStatement.close();
       } catch(Exception e) {
           System.out.println(e.getMessage());
           System.out.println("ERROR: Could not fetch the transactions. Try again.");
@@ -713,6 +727,7 @@ public class Securities {
                       ", Conversion rate to USD: " + resultSet.getDouble("rate_to_usd"));
           }
 
+          resultSet.close();
           preparedStatement.close();
 
       } catch (Exception e) {
@@ -727,8 +742,8 @@ public class Securities {
   private void getPortfolioManagers() {
       try {
 
-          String sql = "SELECT employee_id, first_name, last_name, phone_number, email_id FROM " +
-                  "portfolio_manager JOIN email ON portfolio_manager.employee_id = email.employee_id";
+          String sql = "SELECT pm.employee_id, pm.first_name, pm.last_name, pm.phone_number, e.email_id FROM " +
+                  "portfolio_manager AS pm JOIN email AS e ON pm.employee_id = e.employee_id";
 
           PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
 
@@ -744,6 +759,7 @@ public class Securities {
               );
           }
 
+          resultSet.close();
           preparedStatement.close();
 
       } catch (Exception e) {
