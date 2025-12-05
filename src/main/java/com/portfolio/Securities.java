@@ -4,7 +4,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -122,42 +121,43 @@ public class Securities {
     String dateOfBirth = scanner.next();
     System.out.print("Phone number : ");
     String phoneNumber = scanner.next();
-    System.out.print("Address Street Number :");
+    System.out.print("Address Street Number : ");
     int streetNumber = scanner.nextInt();
-    System.out.print("Address Street Name :");
+    System.out.print("Address Street Name : ");
     String streetName = scanner.nextLine();
-    System.out.print("Address City :");
+    System.out.print("Address City : ");
     String city = scanner.nextLine();
-    System.out.print("Address State (eg. MA/NY):");
+    System.out.print("Address State (eg. MA/NY): ");
     String state = scanner.next();
-    System.out.print("Address ZipCode :");
+    System.out.print("Address ZipCode : ");
     int zipcode = scanner.nextInt();
-    System.out.print("Account category (Classic/Preferred/Standard) :");
+    System.out.print("Account category (Classic/Preferred/Standard) : ");
     String category = scanner.next();
+    System.out.print("Email ID : ");
+    String email = scanner.nextLine();
 
     try {
 
-        String sql = "INSERT INTO investor (first_name, last_name, username, password, category_type, ssn, date_of_birth, phone_number, " +
-                "address_street_number, address_street_name, address_city, address_state, address_zipcode) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "{CALL register_investor(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 
-        PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+        CallableStatement callableStatement = this.connection.prepareCall(sql);
 
-        preparedStatement.setString(1, firstName);
-        preparedStatement.setString(2, lastName);
-        preparedStatement.setString(3, username);
-        preparedStatement.setString(4, password);
-        preparedStatement.setString(5, category);
-        preparedStatement.setInt(6, ssn);
-        preparedStatement.setDate(7, Date.valueOf(dateOfBirth));
-        preparedStatement.setString(8, phoneNumber);
-        preparedStatement.setInt(9, streetNumber);
-        preparedStatement.setString(10, streetName);
-        preparedStatement.setString(11, city);
-        preparedStatement.setString(12, state);
-        preparedStatement.setInt(13, zipcode);
+        callableStatement.setString(1, firstName);
+        callableStatement.setString(2, lastName);
+        callableStatement.setString(3, username);
+        callableStatement.setString(4, password);
+        callableStatement.setString(5, category);
+        callableStatement.setInt(6, ssn);
+        callableStatement.setDate(7, Date.valueOf(dateOfBirth));
+        callableStatement.setString(8, phoneNumber);
+        callableStatement.setInt(9, streetNumber);
+        callableStatement.setString(10, streetName);
+        callableStatement.setString(11, city);
+        callableStatement.setString(12, state);
+        callableStatement.setInt(13, zipcode);
+        callableStatement.setString(14, email);
 
-        int rowsAffected = preparedStatement.executeUpdate();
+        int rowsAffected = callableStatement.executeUpdate();
 
         if (rowsAffected > 0) {
             System.out.println("Investor registered successful!");
@@ -165,7 +165,7 @@ public class Securities {
             System.out.println("Registration failed. Try again.");
         }
 
-        preparedStatement.close();
+        callableStatement.close();
 
     } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -714,12 +714,12 @@ public class Securities {
   private void getCurrencies() {
       try {
 
-          String sql = "SELECT * FROM currency_rates";
+          String sql = "{CALL get_currencies()}";
 
-          PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
-          preparedStatement.execute();
-          ResultSet resultSet = preparedStatement.getResultSet();
+          callableStatement.execute();
+          ResultSet resultSet = callableStatement.getResultSet();
 
           System.out.println("List of available Currencies : ");
           while(resultSet.next()) {
@@ -728,7 +728,7 @@ public class Securities {
           }
 
           resultSet.close();
-          preparedStatement.close();
+          callableStatement.close();
 
       } catch (Exception e) {
           System.out.println(e.getMessage());
@@ -742,13 +742,12 @@ public class Securities {
   private void getPortfolioManagers() {
       try {
 
-          String sql = "SELECT pm.employee_id, pm.first_name, pm.last_name, pm.phone_number, e.email_id FROM " +
-                  "portfolio_manager AS pm JOIN email AS e ON pm.employee_id = e.employee_id";
+          String sql = "{CALL get_portfolio_managers()}";
 
-          PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+          CallableStatement callableStatement = this.connection.prepareCall(sql);
 
-          preparedStatement.execute();
-          ResultSet resultSet = preparedStatement.getResultSet();
+          callableStatement.execute();
+          ResultSet resultSet = callableStatement.getResultSet();
           System.out.println("List of available Portfolio Managers : ");
           while(resultSet.next()) {
               System.out.println("ID: " + resultSet.getInt("employee_id") +
@@ -760,7 +759,7 @@ public class Securities {
           }
 
           resultSet.close();
-          preparedStatement.close();
+          callableStatement.close();
 
       } catch (Exception e) {
           System.out.println(e.getMessage());
