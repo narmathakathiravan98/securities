@@ -340,6 +340,7 @@ public class Securities {
       String phoneNumber = scanner.next();
       System.out.print("Address Street Number : ");
       int streetNumber = scanner.nextInt();
+      scanner.nextLine();
       System.out.print("Address Street Name : ");
       String streetName = scanner.nextLine();
       System.out.print("Address City : ");
