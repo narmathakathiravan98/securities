@@ -123,6 +123,7 @@ public class Securities {
     String phoneNumber = scanner.next();
     System.out.print("Address Street Number : ");
     int streetNumber = scanner.nextInt();
+    scanner.nextLine();
     System.out.print("Address Street Name : ");
     String streetName = scanner.nextLine();
     System.out.print("Address City : ");
@@ -133,6 +134,7 @@ public class Securities {
     int zipcode = scanner.nextInt();
     System.out.print("Account category (Classic/Preferred/Standard) : ");
     String category = scanner.next();
+    scanner.nextLine();
     System.out.print("Email ID : ");
     String email = scanner.nextLine();
 
