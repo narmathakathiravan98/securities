@@ -159,13 +159,9 @@ public class Securities {
         callableStatement.setInt(13, zipcode);
         callableStatement.setString(14, email);
 
-        int rowsAffected = callableStatement.executeUpdate();
+        callableStatement.executeUpdate();
 
-        if (rowsAffected > 0) {
-            System.out.println("Investor registered successful!");
-        } else {
-            System.out.println("Registration failed. Try again.");
-        }
+        System.out.println("Investor registered successful!");
 
         callableStatement.close();
 
